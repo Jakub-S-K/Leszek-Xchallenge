@@ -13,7 +13,7 @@
 #define EngineL_PWM 21 //PWM pb10
 #define EngineL_F 20 //Przut gdy wysoki  :3 pb2
 #define EngineL_B 19 //tył gdy wysoki  pb1
-//-----------------------
+//----------------------t -
 //GDY ENGINE F i B są wysokie jednocześnie to jest zwarcie
 //-----------------------
 //ENGINE R albo lewy
@@ -22,25 +22,6 @@
 #define EngineR_B 16 //tył pa6
 
 #define START_PIN 40 //PB4 CHYBA!
-
-#define DEBUG
-bool debug = true;
-
-void setup() {
-  // put your setup code here, to run once:
-  #ifdef DEBUG
-    delay(100);
-    Serial.begin(115200);  
-  #endif
-  
-  //Config
-  analogReadResolution(10);
-  
-  delay(10);
-  
-}
-
-
 
 //engines
 bool EngineL = false; // false backward, true forward
@@ -63,43 +44,62 @@ short sharp_RF = 0;
 short sharp_LS = 0;
 short sharp_RS = 0;
 
+inline void Move(short speed, float speedProportion, bool LE_direction, bool RE_direction);
+inline void MoveAleInaczej(short x, short y);
+inline void readSensors();
+bool setState();
 
+void setup() {
 
+  pinMode(START_PIN, INPUT_PULLUP);
+  pinMode(sharp_LF_Pin, INPUT);
+  pinMode(sharp_RF_Pin, INPUT);
+  pinMode(sharp_LS_Pin, INPUT);
+  pinMode(sharp_RS_Pin, INPUT);
 
-// TEMP
-short tmpsharp_LF = 0;
-short tmpsharp_RF = 0;
+#ifdef DEBUG
+  delay(100);
+  Serial.begin(115200);  
+#endif
+}
+
+void loop() {
+
+  while(digitalRead(START_PIN)); //Wait for LOW voltage to start
+  readSensors();
+  if(setState()) { //setState return true on abrupt change needing action immediately
+    return; 
+  }
+
+#ifdef DEBUG
+  Serial.print(sharp_LF);
+  Serial.print(',');
+  Serial.print(sharp_RF);
+  Serial.print(',');
+  Serial.print(sharp_RF + sharp_LF);
+  Serial.print(',');
+  Serial.println(sharp_LF - sharp_RF);  
+#endif
+  
+}
+
+inline void readSensors()  { 
+  sharp_LF = analogRead(sharp_LF_Pin);
+  sharp_RF = analogRead(sharp_RF_Pin);
+  sharp_LS = analogRead(sharp_LS_Pin);
+  sharp_RS = analogRead(sharp_RS_Pin);
+}
 
 void Move(short speed, float speedProportion, bool LE_direction, bool RE_direction){ //s
   //speed 
-  
   //bananas rotate ex 90deg clockwise -90deg counterclockwise 
 }
+
 void MoveAleInaczej(short x, short y){
   //niewiem
 }
 
-void readsensor(int numL,int numR)  { 
+bool setState() { // Set state machine based on sensor input
 
-  tmpsharp_LF = analogRead(numL);
-  tmpsharp_RF = analogRead(numR);
-}
-
-
-void loop() {
-  // put your main code here, to run repeatedly:
-  while(!digitalRead(START_PIN));
-  readsensor(34,15);
-  sharp_LF = tmpsharp_LF;
-  sharp_RF = tmpsharp_RF;
-  if(debug){
-    Serial.print(sharp_LF);
-    Serial.print(',');
-    Serial.print(sharp_RF);
-    Serial.print(',');
-    Serial.print(sharp_RF + sharp_LF);
-    Serial.print(',');
-    Serial.println(sharp_LF - sharp_RF);  
-  }
-  
+  return true;
 }
